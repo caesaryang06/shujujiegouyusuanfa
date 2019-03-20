@@ -10,6 +10,8 @@ import java.util.List;
 public class HuffmanTree {
 
     public static void main(String[] args) {
+        byte[] b = new byte[]{114};
+        System.out.println(new String(b));
         int[] arr = new int[] {3,7,8,29,5,11,23,14};
         Node huffManTree = createHuffManTree(arr);
         System.out.println(huffManTree);
