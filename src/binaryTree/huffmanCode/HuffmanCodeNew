@@ -1,0 +1,140 @@
+package com.huffmantree;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class HuffmanCodeNew {
+	
+	//用于存储赫夫曼编码表  供编码使用          解码的时候需要将键值对对调
+    static Map<Byte, String> huffmanCode = new HashMap<Byte, String>(); 
+	
+    public static void main(String[] args) {
+    	String msg = "can you can a can as a can canner can a can";
+    	
+    	//将字符串转成byte  
+    	byte[] bytes = msg.getBytes();
+    	
+    	//统计每个byte出现的次数
+         List<Node> byteNumList = countByte(bytes);
+         
+         //生成赫夫曼树
+         Node tree = getHuffmanTree(byteNumList);
+      
+         //生成赫夫曼编码表
+		 getHuffmanCode(tree);
+		 
+		 //使用赫夫曼编码表对byte数组进行编码
+		 byte[] zipByte = huffmanZip(bytes,huffmanCode);
+		 System.out.println(Arrays.toString(zipByte));
+		 	
+	}
+    
+    
+    //编码
+    private static byte[] huffmanZip(byte[] bytes, Map<Byte, String> huffCode) {
+		StringBuilder sb = new StringBuilder();
+		for (byte b : bytes) {
+			sb.append(huffCode.get(b));
+		}
+		int len = sb.length()%8==0?sb.length()/8:sb.length()/8+1;
+		byte[] zipByte = new byte[len];
+	   int index = 0; //记录下标
+	   String binaryStr;
+		for (int i = 0; i < sb.length(); i+=8) {
+			  if (i+8<sb.length()) {
+				  binaryStr = sb.substring(i, i+8);  
+			  }else {
+				  binaryStr = sb.substring(i);
+			  } 
+			  
+			  zipByte[index++] = (byte) Integer.parseInt(binaryStr, 2);
+		}
+		return zipByte;
+	}
+
+    /**
+     * 根据赫夫曼树生成赫夫曼编码表
+     * @param tree
+     * @return
+     */
+    private static void getHuffmanCode(Node tree) {
+    	StringBuilder sb = new StringBuilder();
+    	if (tree == null) {
+    		return ;
+    	}
+        getCodes(tree.getlNode(),"0",sb);
+        getCodes(tree.getrNode(),"1",sb);
+	}
+    
+    private static void getCodes(Node node, String s, StringBuilder sb) {
+        StringBuilder sb2 = new StringBuilder(sb);
+        sb2.append(s);
+        if (node.getData()==null){
+            getCodes(node.getlNode(),"0",sb2);
+            getCodes(node.getrNode(),"1",sb2);
+        }else{
+        	huffmanCode.put(node.getData(),sb2.toString());
+        }
+    }
+    
+    
+
+	/**
+     * 生成赫夫曼树
+     * @param byteNumList
+     * @return
+     */
+    private static Node getHuffmanTree(List<Node> byteNumList) {
+		while (byteNumList.size()>1) {
+			//排序
+			Collections.sort(byteNumList);
+			
+			//取出集合末尾的两个节点
+			Node lNode = byteNumList.get(byteNumList.size()-1);
+			Node rNode = byteNumList.get(byteNumList.size()-2);
+			//生成新的树
+			Node parent = new Node(lNode.getWeight()+rNode.getWeight());
+			parent.setlNode(lNode);
+			parent.setrNode(rNode);
+			//删除原集合中的两个节点
+			byteNumList.remove(lNode);
+			byteNumList.remove(rNode);
+			
+			//将新创建的树添加到集合中
+			byteNumList.add(parent);	
+		}
+    	
+		return byteNumList.get(0);
+	}
+
+
+	/**
+     * 根据byte数组统计每个byte出现的次数 并组成节点的集合
+     * @param bytes
+     * @return
+     */
+	private static List<Node> countByte(byte[] bytes) {
+		Map<Byte, Integer> countByte = new HashMap<Byte, Integer>();
+		List<Node> nodeList = new ArrayList<Node>();
+		Integer count;
+		//统计出现的次数
+		for (byte b : bytes) {
+			count = countByte.get(b);
+			if (count!=null) {
+				countByte.put(b, count+1);
+			}else {
+				countByte.put(b, 1);
+			}	
+		}
+		//转成节点的集合
+		for (Map.Entry<Byte, Integer> entry:countByte.entrySet()) {
+			nodeList.add(new Node(entry.getValue(),entry.getKey()));
+		}
+		return nodeList;
+	}
+
+}
