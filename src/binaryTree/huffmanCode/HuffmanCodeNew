@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HuffmanCodeNew {
+public class HuffmanCode {
 	
 	//用于存储赫夫曼编码表  供编码使用          解码的时候需要将键值对对调
     static Map<Byte, String> huffmanCode = new HashMap<Byte, String>(); 
+    
+    static Map<String, Byte> huffmanDecode = new HashMap<String, Byte>();
 	
     public static void main(String[] args) {
     	String msg = "can you can a can as a can canner can a can";
@@ -20,7 +22,7 @@ public class HuffmanCodeNew {
     	
     	//统计每个byte出现的次数
          List<Node> byteNumList = countByte(bytes);
-         
+          
          //生成赫夫曼树
          Node tree = getHuffmanTree(byteNumList);
       
@@ -29,12 +31,82 @@ public class HuffmanCodeNew {
 		 
 		 //使用赫夫曼编码表对byte数组进行编码
 		 byte[] zipByte = huffmanZip(bytes,huffmanCode);
-		 System.out.println(Arrays.toString(zipByte));
+		 
+		 //将编码表的键值对调换  生成解码表
+		 geneHuffmanDecode(huffmanCode);
+		 //解码 
+		  byte[] unzipByte = unzipByhuffmanDecode(zipByte);
+		  
+		  //将解码后的byte数组转成压缩前的字符串
+		 System.out.println(new String(unzipByte));
 		 	
 	}
     
+
     
-    //编码
+    /**
+     * 使用赫夫曼解码表对数组进行解码
+     * @param zipByte
+     * @return
+     */
+    private static byte[] unzipByhuffmanDecode(byte[] zipByte) {
+    	//用于临时存储解码后的byte集合
+    	List<Byte> upzipByteList = new ArrayList<Byte>();
+    	StringBuilder sb = new StringBuilder();  //用于临时存储二进制流
+    	//先将byte转成二进制字符串
+    	for (int i=0;i<zipByte.length;i++) {
+    		if(i==zipByte.length-1 && zipByte[i]>0) {
+    			sb.append(Integer.toBinaryString(zipByte[i]));
+    		}else {
+    			sb.append(byteToBinaryStr(zipByte[i]));    			
+    		}
+    	}
+    	
+    	// 使用赫夫曼解码表对二进制流进行解码
+    	int start =0;  //记录开始截取字符串的位置
+    	String binaryStr;
+    	Byte upzipByte = null;
+    	for (int i = 1; i <= sb.length(); i++) {
+			binaryStr = sb.substring(start, i);
+			upzipByte = huffmanDecode.get(binaryStr);
+    		if(upzipByte!=null) {
+    			upzipByteList.add(upzipByte);
+    			start = i;
+    		}
+		}
+    	//将集合转byte数组
+    	int index = 0;
+    	byte[] byteArray = new byte[upzipByteList.size()];
+    	for (Byte b : upzipByteList) {
+			 byteArray[index++] = b;
+		}
+    	
+		return byteArray;
+	}
+    
+    /**
+     * byte转二进制流
+     * @param b
+     * @return
+     */
+    private static String byteToBinaryStr(byte b) {
+    	
+    	return Integer.toBinaryString((b & 0xFF) + 0x100).substring(1);  
+    }
+
+	/**
+     * 根据编码表生成解码表  
+     * @param huffmanCode2
+     */
+    private static void geneHuffmanDecode(Map<Byte, String> huffmanCod) {
+		
+    	for (Map.Entry<Byte, String> entry:huffmanCod.entrySet()) {
+    		huffmanDecode.put(entry.getValue(), entry.getKey());
+    	}
+	}
+
+
+	//编码
     private static byte[] huffmanZip(byte[] bytes, Map<Byte, String> huffCode) {
 		StringBuilder sb = new StringBuilder();
 		for (byte b : bytes) {
