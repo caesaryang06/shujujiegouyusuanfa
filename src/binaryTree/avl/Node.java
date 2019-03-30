@@ -1,4 +1,4 @@
-package binaryTree.binarysortTree;
+package binaryTree.avl;
 
 public class Node {
 
@@ -21,6 +21,27 @@ public class Node {
     }
 
 
+    /**
+     * 获取左子树的高度
+     * @return
+     */
+    public int leftHeight(){
+        if (left == null){
+            return 0;
+        }
+        return left.height();
+    }
+
+    /**
+     * 获取右子树的高度
+     * @return
+     */
+    public int rightHeight(){
+        if (right == null){
+            return 0;
+        }
+        return right.height();
+    }
 
     /**
      * 向子树中添加节点
@@ -46,6 +67,66 @@ public class Node {
              }
         }
 
+       //添加节点完成以后 查询是否平衡
+        //进行右旋
+        if (leftHeight()-rightHeight()>=2){
+            //双旋转之先左后右
+            if (left!=null && left.leftHeight()<left.rightHeight()){
+                left.leftRotate();
+                rightRotate();
+            //单右旋
+            }else{
+                rightRotate();
+            }
+        }
+        //进行左旋
+        if (rightHeight()-leftHeight()>=2){
+            //双旋转之选右后左
+            if (right!=null && right.rightHeight()<right.leftHeight()){
+                right.rightRotate();
+                leftRotate();
+
+            }else {
+                leftRotate();
+            }
+        }
+
+    }
+
+    /**
+     * 左旋  跟右旋相反
+     */
+    private void leftRotate() {
+
+        Node newNode = new Node(value);
+
+        newNode.left = left;
+
+        newNode.right = right.left;
+
+        value = right.value;
+
+        right = right.right;
+
+        left = newNode;
+    }
+
+    /**
+     * 右旋
+     */
+    private void rightRotate() {
+        //1.创建一个新节点  新节点的值等于当前节点的值
+        Node newNode = new Node(value);
+        //2.让新节点的右节点等于当前节点的右节点
+        newNode.right = right;
+        //3.新节点的左节点设置为当前节点的左子节点的右子节点
+        newNode.left = left.right;
+        //4.将当前节点的值修改为左子节点的值
+        value = left.value;
+        //5.将当前节点的左子节点的左子节点指向当前节点的左子节点
+        left = left.left;
+        //6.将新节点指向当前节点的右子节点
+        right = newNode;
     }
 
     /**
